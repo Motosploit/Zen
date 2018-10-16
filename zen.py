@@ -1,4 +1,4 @@
-#python 3, want to convert to 2.7
+#python 2.7
 #import modules
 #regex module
 import re
@@ -122,38 +122,70 @@ def findEmailFromContributor(username, repo, contributor):
 	#return email variable
 	return email
 
+#define findEmailFromUsername function with username variable
 def findEmailFromUsername(username):
+	#repos equals the values returned from running the findReposFromUsername function 
+	#with the username variable passed to it
 	repos = findReposFromUsername(username)
+	#for loop through repos list
 	for repo in repos:
+		#email equals values of findEmailFromContributor 
+		#with the username, repo and username variables passed to it
 		email = findEmailFromContributor(username, repo, username)
+		#if data in email then print out username and email variables
 		if email:
 			print (username + ' : ' + email)
 			break
-
+#define findEmailsFromRepo function with username and repo variable
 def findEmailsFromRepo(username, repo):
+	#contibutors equals values from findContributorsFromRepo running with username and repo variables
 	contributors = findContributorsFromRepo(username, repo)
+	#initialize jsonOutput dictionary
 	jsonOutput = {}
+	#print values of length of contributors
 	print ('%s Total contributors: %s%i%s' % (info, green, len(contributors), end))
+	#loop through contributors list
 	for contributor in contributors:
+		#email equals values returned from findEmailFromContributor function
 		email = (findEmailFromContributor(username, repo, contributor))
+		#print contributor and email values
 		print (contributor + ' : ' + email)
+		#jsonOuput dictionary contributor key to contain values of email variable
 		jsonOutput[contributor] = email
+	#if output is true
 	if output:
+		#jsonOutput key data from dictionary is formatted to json and set to json_string variable
 		json_string = json.dumps(jsonOutput, indent=4)
+		#savefile equals the output file opened in write mode
 		savefile = open(output, 'w+')
+		#write to savefile the json_string
 		savefile.write(json_string)
+		#close the savefile
 		savefile.close()
-
+#define the findUsersFromOrganization function
 def findUsersFromOrganization(username):
+	#response equals the get request to the url with the values passed into username.
+	#And use .text to pull the text from the response
 	response = get('https://api.github.com/orgs/%s/members?per_page=100' % username).text
+	#members equals the returned data from searching response variable
+	#with the regular expression of r'"login":"(.*?)"'
 	members = re.findall(r'"login":"(.*?)"', response)
+	#return members variable
 	return members
 
+#if targetOrganization equals true
 if targetOrganization:
+	#set usernames to output of findUsersFromOrganization(username) function
 	usernames = findUsersFromOrganization(username)
+	#loop through usernames data
 	for username in usernames:
+		#run each value through the findEmailFromUsername(username) function
 		findEmailFromUsername(username)
+#elif targetUser equals true
 elif targetUser:
+	#run findEmailFromUsername function
 	findEmailFromUsername(username)
+#eliftargetRepo is true
 elif targetRepo:
+	#run findEmailsFromRepo function
 	findEmailsFromRepo(username, repo)
